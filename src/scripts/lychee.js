@@ -54,7 +54,7 @@ lychee.init = function() {
 		} else if (data.status===1) {
 
 			// Logged out
-
+			lychee.loginDialog()
 			lychee.checkForUpdates = data.config.checkForUpdates || '1'
 
 			lychee.setMode('public')
