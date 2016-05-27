@@ -259,7 +259,7 @@ final class Admin extends Access {
 
 		Validator::required(isset($_POST['term']), __METHOD__);
 
-		Response::json(search($_POST['term']));
+		Response::json(search($_POST['term'], null));
 
 	}
 

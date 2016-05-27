@@ -8,7 +8,7 @@ use Lychee\Modules\Settings;
 /**
  * @return array|false Returns an array with albums and photos.
  */
-function search($term) {
+function search($term, $album) {
 
 	// Initialize return var
 	$return = array(
@@ -48,7 +48,7 @@ function search($term) {
 		$album = Album::prepareData($album);
 
 		// Thumbs
-		$query  = Database::prepare(Database::get(), "SELECT thumbUrl FROM ? WHERE album = '?' " . Settings::get()['sortingPhotos'] . " LIMIT 0, 3", array(LYCHEE_TABLE_PHOTOS, $album['id']));
+		$query  = Database::prepare(Database::get(), "SELECT thumbUrl, url FROM ? WHERE album = '?' " . Settings::get()['sortingPhotos'] . " LIMIT 0, 3", array(LYCHEE_TABLE_PHOTOS, $album['id']));
 		$thumbs = Database::execute(Database::get(), $query, __METHOD__, __LINE__);
 
 		if ($thumbs===false) return false;
@@ -56,7 +56,11 @@ function search($term) {
 		// For each thumb
 		$k = 0;
 		while ($thumb = $thumbs->fetch_object()) {
-			$album['thumbs'][$k] = LYCHEE_URL_UPLOADS_THUMB . $thumb->thumbUrl;
+			if(strpos($thumb->url, '.svg') !== false){
+				$album['thumbs'][$k] = 'uploads/big/' . $thumb->url;
+			} else {
+				$album['thumbs'][$k] = LYCHEE_URL_UPLOADS_THUMB . $thumb->thumbUrl;
+			}
 			$k++;
 		}
 
