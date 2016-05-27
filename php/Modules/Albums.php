@@ -51,15 +51,20 @@ final class Albums {
 				($public===false)) {
 
 					// Execute query
-					$query  = Database::prepare(Database::get(), "SELECT thumbUrl FROM ? WHERE album = '?' ORDER BY star DESC, " . substr(Settings::get()['sortingPhotos'], 9) . " LIMIT 3", array(LYCHEE_TABLE_PHOTOS, $album['id']));
+					$query  = Database::prepare(Database::get(), "SELECT thumbUrl, url FROM ? WHERE album = '?' ORDER BY star DESC, " . substr(Settings::get()['sortingPhotos'], 9) . " LIMIT 3", array(LYCHEE_TABLE_PHOTOS, $album['id']));
 					$thumbs = Database::execute(Database::get(), $query, __METHOD__, __LINE__);
-
 					if ($thumbs===false) return false;
 
 					// For each thumb
+
 					$k = 0;
 					while ($thumb = $thumbs->fetch_object()) {
-						$album['thumbs'][$k] = LYCHEE_URL_UPLOADS_THUMB . $thumb->thumbUrl;
+						if(strpos($thumb->url, '.svg') !== false){
+							$album['thumbs'][$k] = 'uploads/big/' . $thumb->url;
+						}
+						else {
+							$album['thumbs'][$k] = LYCHEE_URL_UPLOADS_THUMB . $thumb->thumbUrl;
+						}
 						$k++;
 					}
 

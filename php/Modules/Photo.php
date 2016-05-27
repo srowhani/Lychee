@@ -322,7 +322,7 @@ final class Photo {
 			$thumb2x->clear();
 			$thumb2x->destroy();
 
-		} else {
+		} else if (strpos($type, 'image') !== false){
 
 			// Create image
 			$thumb   = imagecreatetruecolor($newWidth, $newHeight);
@@ -342,27 +342,26 @@ final class Photo {
 			switch($type) {
 				case 'image/jpeg': $sourceImg = imagecreatefromjpeg($url); break;
 				case 'image/png':  $sourceImg = imagecreatefrompng($url); break;
-				case 'image/svg+xml':
-					return "SVG";
 				case 'image/gif':  $sourceImg = imagecreatefromgif($url); break;
-				default:          break;
+				default:          $sourceImg = NULL; break;
 			}
 
-			// Create thumb
-			fastImageCopyResampled($thumb, $sourceImg, 0, 0, $startWidth, $startHeight, $newWidth, $newHeight, $newSize, $newSize);
-			imagejpeg($thumb, $newUrl, $thumbQuality);
-			imagedestroy($thumb);
+			if($sourceImg){
+				// Create thumb
+				fastImageCopyResampled($thumb, $sourceImg, 0, 0, $startWidth, $startHeight, $newWidth, $newHeight, $newSize, $newSize);
+				imagejpeg($thumb, $newUrl, $thumbQuality);
+				imagedestroy($thumb);
 
-			// Create retina thumb
-			fastImageCopyResampled($thumb2x, $sourceImg, 0, 0, $startWidth, $startHeight, $newWidth*2, $newHeight*2, $newSize, $newSize);
-			imagejpeg($thumb2x, $newUrl2x, $thumbQuality);
-			imagedestroy($thumb2x);
+				// Create retina thumb
+				fastImageCopyResampled($thumb2x, $sourceImg, 0, 0, $startWidth, $startHeight, $newWidth*2, $newHeight*2, $newSize, $newSize);
+				imagejpeg($thumb2x, $newUrl2x, $thumbQuality);
+				imagedestroy($thumb2x);
 
-			// Free memory
-			imagedestroy($sourceImg);
+				// Free memory
+				imagedestroy($sourceImg);
+			}
 
-		}
-
+		} else {return false;}
 		// Call plugins
 		Plugins::get()->activate(__METHOD__, 1, func_get_args());
 
