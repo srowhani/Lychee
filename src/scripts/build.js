@@ -46,7 +46,6 @@ build.album = function(data) {
 	let html = ''
 
 	let { path: retinaThumbUrl, isPhoto } = lychee.retinize(data.thumbs[0])
-
 	html += lychee.html`
 	        <div class='album' data-id='$${ data.id }'>
 	            <img src='$${ data.thumbs[2] }' width='200' height='200' alt='Photo thumbnail' data-overlay='false' draggable='false'>
