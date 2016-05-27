@@ -102,7 +102,7 @@ final class Albums {
 		 * Unsorted
 		 */
 
-		$query    = Database::prepare(Database::get(), 'SELECT thumbUrl FROM ? WHERE album = 0 ' . Settings::get()['sortingPhotos'], array(LYCHEE_TABLE_PHOTOS));
+		$query    = Database::prepare(Database::get(), 'SELECT thumbUrl, url FROM ? WHERE album = 0 ' . Settings::get()['sortingPhotos'], array(LYCHEE_TABLE_PHOTOS));
 		$unsorted = Database::execute(Database::get(), $query, __METHOD__, __LINE__);
 		$i        = 0;
 
@@ -115,7 +115,12 @@ final class Albums {
 
 		while($row = $unsorted->fetch_object()) {
 			if ($i<3) {
-				$return['unsorted']['thumbs'][$i] = LYCHEE_URL_UPLOADS_THUMB . $row->thumbUrl;
+				if(strpos($row->url, '.svg') !== false){
+					$return['unsorted']['thumbs'][$i] = 'uploads/big/' . $row->url;
+				}
+				else {
+					$return['unsorted']['thumbs'][$i] = LYCHEE_URL_UPLOADS_THUMB . $row->thumbUrl;
+				}
 				$i++;
 			} else break;
 		}
@@ -124,7 +129,7 @@ final class Albums {
 		 * Starred
 		 */
 
-		$query   = Database::prepare(Database::get(), 'SELECT thumbUrl FROM ? WHERE star = 1 ' . Settings::get()['sortingPhotos'], array(LYCHEE_TABLE_PHOTOS));
+		$query   = Database::prepare(Database::get(), 'SELECT thumbUrl, url FROM ? WHERE star = 1 ' . Settings::get()['sortingPhotos'], array(LYCHEE_TABLE_PHOTOS));
 		$starred = Database::execute(Database::get(), $query, __METHOD__, __LINE__);
 		$i       = 0;
 
@@ -137,7 +142,11 @@ final class Albums {
 
 		while($row3 = $starred->fetch_object()) {
 			if ($i<3) {
-				$return['starred']['thumbs'][$i] = LYCHEE_URL_UPLOADS_THUMB . $row3->thumbUrl;
+				if(strpos($row3->url, '.svg') !== false){
+					$return['starred']['thumbs'][$i] = 'uploads/big/' . $row3->url;
+				} else {
+					$return['starred']['thumbs'][$i] = LYCHEE_URL_UPLOADS_THUMB . $row3->thumbUrl;
+				}
 				$i++;
 			} else break;
 		}
@@ -146,7 +155,7 @@ final class Albums {
 		 * Public
 		 */
 
-		$query  = Database::prepare(Database::get(), 'SELECT thumbUrl FROM ? WHERE public = 1 ' . Settings::get()['sortingPhotos'], array(LYCHEE_TABLE_PHOTOS));
+		$query  = Database::prepare(Database::get(), 'SELECT thumbUrl, url FROM ? WHERE public = 1 ' . Settings::get()['sortingPhotos'], array(LYCHEE_TABLE_PHOTOS));
 		$public = Database::execute(Database::get(), $query, __METHOD__, __LINE__);
 		$i      = 0;
 
@@ -159,7 +168,11 @@ final class Albums {
 
 		while($row2 = $public->fetch_object()) {
 			if ($i<3) {
-				$return['public']['thumbs'][$i] = LYCHEE_URL_UPLOADS_THUMB . $row2->thumbUrl;
+				if(strpos($row2->url, '.svg') !== false){
+					$return['public']['thumbs'][$i] = 'uploads/big/' . $row2->url;
+				} else {
+					$return['public']['thumbs'][$i] = LYCHEE_URL_UPLOADS_THUMB . $row2->thumbUrl;
+				}
 				$i++;
 			} else break;
 		}
@@ -168,7 +181,7 @@ final class Albums {
 		 * Recent
 		 */
 
-		$query  = Database::prepare(Database::get(), 'SELECT thumbUrl FROM ? WHERE LEFT(id, 10) >= unix_timestamp(DATE_SUB(NOW(), INTERVAL 1 DAY)) ' . Settings::get()['sortingPhotos'], array(LYCHEE_TABLE_PHOTOS));
+		$query  = Database::prepare(Database::get(), 'SELECT thumbUrl, url FROM ? WHERE LEFT(id, 10) >= unix_timestamp(DATE_SUB(NOW(), INTERVAL 1 DAY)) ' . Settings::get()['sortingPhotos'], array(LYCHEE_TABLE_PHOTOS));
 		$recent = Database::execute(Database::get(), $query, __METHOD__, __LINE__);
 		$i      = 0;
 
@@ -181,7 +194,11 @@ final class Albums {
 
 		while($row3 = $recent->fetch_object()) {
 			if ($i<3) {
-				$return['recent']['thumbs'][$i] = LYCHEE_URL_UPLOADS_THUMB . $row3->thumbUrl;
+				if(strpos($row3->url, '.svg') !== false){
+					$return['recent']['thumbs'][$i] = 'uploads/big/' . $row3->url;
+				} else {
+					$return['recent']['thumbs'][$i] = LYCHEE_URL_UPLOADS_THUMB . $row3->thumbUrl;
+				}
 				$i++;
 			} else break;
 		}
