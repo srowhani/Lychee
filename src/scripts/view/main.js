@@ -174,9 +174,7 @@ const loadPhotoInfo = function(photoID) {
 		// Render Sidebar
 		let structure = sidebar.createStructure.photo(data)
 		let html      = sidebar.render(structure)
-
-		sidebar.dom('.sidebar__wrapper').html(html)
-		sidebar.bind()
+		view.render(html);
 
 	})
 

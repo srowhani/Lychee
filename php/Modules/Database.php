@@ -265,6 +265,25 @@ final class Database {
 
 		}
 
+		if ($result===false) {
+
+			// Read file
+			$file  = __DIR__ . '/../database/comment_table.sql';
+			$query = @file_get_contents($file);
+
+			if ($query===false) {
+				Log::error($connection, __METHOD__, __LINE__, 'Could not load comments for lychee_photos');
+				return false;
+			}
+
+			// Create table
+			$query  = self::prepare($connection, $query, array());
+			$result = self::execute($connection, $query, __METHOD__, __LINE__);
+
+			if ($result===false) return false;
+
+		}
+		
 		return true;
 
 	}

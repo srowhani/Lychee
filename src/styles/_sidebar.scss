@@ -1,5 +1,23 @@
+.input {
+	margin:2px;
+}
+.author {
+	font-weight: bold;
+}
+.input_send {
+	fill: rgba(255,255,255,.5);
+	float: right;
+	padding:2px;
+	transition: fill .2s ease-out;
+	:hover {
+		fill: #2293EC;
+	}
+	.iconic {
+		width:20px;
+		height:20px;
+	}
+}
 .sidebar {
-
 	position: fixed;
 	top: 50px;
 	right: -360px;

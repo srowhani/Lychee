@@ -110,6 +110,20 @@ sidebar.changeAttr = function(attr, value = '-', dangerouslySetInnerHTML = false
 
 }
 
+sidebar.submitComment = function() {
+	if(!$('.input_comment').val() || !$('.input_author').val())
+		return;
+	api.post('Photo::insertComment', {
+		photoID: photo.getID(),
+		text: $('.input_comment').val(),
+		author: $('.input_author').val()
+	}, function(data) {
+		$('.input_comment').val('')
+		$('.input_author').val('')
+		sidebar.render(sidebar.createStructure.photo(photo.json));
+	});
+}
+
 sidebar.createStructure.photo = function(data) {
 
 	if (data==null || data==='') return false
@@ -151,7 +165,7 @@ sidebar.createStructure.photo = function(data) {
 		type  : sidebar.types.DEFAULT,
 		rows  : [
 			{ title: 'Size',       value: data.size },
-			{ title: 'Format',     value: data.type },
+			{ title: 'Format',     value: data ? data.type : '' },
 			{ title: 'Resolution', value: data.width + ' x ' + data.height }
 		]
 	}
@@ -203,13 +217,41 @@ sidebar.createStructure.photo = function(data) {
 		]
 	}
 
+	structure.comments = {
+		title: 'Comments',
+		type  : sidebar.types.DEFAULT,
+		rows : $.get('php/index.php?function=Photo::getComments', {photoID: photo.getID()}).then(function(data){
+			return JSON.parse(data).map(function(e){
+				return {
+					title: `<p class='author'>${e.author}</p>`,
+					value: e.text
+				}
+			});
+		})
+	}
+	structure.reply = {
+		title: 'Reply',
+		type  : sidebar.types.DEFAULT,
+		rows: [
+			{
+				title: `<input type='text' class='header__search input_author input' placeholder='Username'/>`,
+				value: `<input type='text' class='header__search input_comment input' placeholder='Comment'/>
+				<br/><a class="input_send button--envelope-closed" onclick='sidebar.submitComment()' title="Comment">
+				<svg class="iconic"><use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#envelope-closed"></use></svg>
+				</a>`
+			}
+		]
+
+	}
 	// Construct all parts of the structure
 	structure = [
 		structure.basics,
 		structure.image,
 		structure.tags,
 		structure.exif,
-		structure.sharing
+		structure.sharing,
+		structure.comments,
+		structure.reply
 	]
 
 	return structure
@@ -306,7 +348,6 @@ sidebar.createStructure.album = function(data) {
 			{ title: 'Password',     value: password }
 		]
 	}
-
 	// Construct all parts of the structure
 	structure = [
 		structure.basics,
@@ -319,49 +360,71 @@ sidebar.createStructure.album = function(data) {
 }
 
 sidebar.render = function(structure) {
-
 	if (structure==null || structure==='') return false
 
 	let html = ''
 
 	let renderDefault = function(section) {
-
 		let _html = ''
 
 		_html += `
-		         <div class='sidebar__divider'>
+		         <div class='sidebar__divider sidebar_${ section.title }'>
 		             <h1>${ section.title }</h1>
 		         </div>
 		         <table>
 		         `
+		if(section.rows.then) {
+			return section.rows.then(function(rows){
+				rows.forEach(function(row) {
+					let value = row.value;
+					// Set a default for the value
+					if (value==='' || value==null) value = '-'
 
-		section.rows.forEach(function(row) {
+					// Wrap span-element around value for easier selecting on change
+					value = lychee.html`<span class='attr_$${ row.title.toLowerCase() }'>${ value }</span>`
 
-			let value = row.value
+					// Add edit-icon to the value when editable
+					if (row.editable===true) value += ' ' + build.editIcon('edit_' + row.title.toLowerCase())
 
-			// Set a default for the value
-			if (value==='' || value==null) value = '-'
+					_html += lychee.html`
+					         <tr>
+					             <td>${ row.title }</td>
+					             <td>${ value }</td>
+					         </tr>
+					         `
+				})
+				_html += `
+								 </table>
+								 `
+				return _html;
+			})
+		}
+		else {
+			section.rows.forEach(function(row) {
 
-			// Wrap span-element around value for easier selecting on change
-			value = lychee.html`<span class='attr_$${ row.title.toLowerCase() }'>$${ value }</span>`
+				let value = row.value
+				// Set a default for the value
+				if (value==='' || value==null) value = '-'
 
-			// Add edit-icon to the value when editable
-			if (row.editable===true) value += ' ' + build.editIcon('edit_' + row.title.toLowerCase())
+				// Wrap span-element around value for easier selecting on change
+				value = lychee.html`<span class='attr_$${ row.title.toLowerCase() }'>${ value }</span>`
 
-			_html += lychee.html`
-			         <tr>
-			             <td>$${ row.title }</td>
-			             <td>${ value }</td>
-			         </tr>
-			         `
+				// Add edit-icon to the value when editable
+				if (row.editable===true) value += ' ' + build.editIcon('edit_' + row.title.toLowerCase())
 
-		})
+				_html += lychee.html`
+				         <tr>
+				             <td>${ row.title }</td>
+				             <td>${ value }</td>
+				         </tr>
+				         `
 
-		_html += `
-		         </table>
-		         `
-
-		return _html
+			})
+			_html += `
+							 </table>
+							 `
+			return _html
+		}
 
 	}
 
@@ -371,7 +434,8 @@ sidebar.render = function(structure) {
 		let editable = ''
 
 		// Add edit-icon to the value when editable
-		if (section.editable===true) editable = build.editIcon('edit_tags')
+		if (section.editable===true)
+			editable = build.editIcon('edit_tags')
 
 		_html += lychee.html`
 		         <div class='sidebar__divider'>
@@ -387,13 +451,12 @@ sidebar.render = function(structure) {
 
 	}
 
-	structure.forEach(function(section) {
-
-		if (section.type===sidebar.types.DEFAULT)   html += renderDefault(section)
-		else if (section.type===sidebar.types.TAGS) html += renderTags(section)
-
-	})
-
-	return html
-
+	return structure.map ? structure.map(function(section) {
+		if (section.type===sidebar.types.DEFAULT){
+			return renderDefault(section);
+		}
+		else if (section.type===sidebar.types.TAGS)
+			return renderTags(section)
+		return "";
+	}) : "";
 }

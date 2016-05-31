@@ -218,7 +218,7 @@ final class Photo {
 			if (!$this->createThumb($path, $photo_name, $info['type'], $info['width'], $info['height'])) {
 				Log::error(Database::get(), __METHOD__, __LINE__, 'Could not create thumbnail for photo');
 				if ($returnOnError===true) return false;
-				Response::error('Could not create thumbnail for photo!');
+				//Response::error('Could not create thumbnail for photo!');
 			}
 
 			// Create Medium
@@ -937,7 +937,40 @@ final class Photo {
 		return true;
 
 	}
+	public function getComments($id){
+		// Call plugins
+		Plugins::get()->activate(__METHOD__, 0, func_get_args());
 
+		// Init vars
+		$error = false;
+
+		$query  = Database::prepare(Database::get(), "SELECT * FROM `comments` WHERE `photo_id` like ?", array($id));
+		$result = Database::execute(Database::get(), $query, __METHOD__, __LINE__);
+		$r = array();
+		while($comment = $result->fetch_assoc()){
+			array_push($r, $comment);
+		}
+		Plugins::get()->activate(__METHOD__, 1, func_get_args());
+
+		return $r;
+	}
+	public function insertComment($id, $text, $author) {
+		Validator::required(isset($id), __METHOD__);
+
+		// Call plugins
+		Plugins::get()->activate(__METHOD__, 0, func_get_args());
+
+		// Init vars
+		$error = false;
+
+		// Get photos
+		$query  = Database::prepare(Database::get(), "INSERT INTO `comments`(`photo_id`, `text`, `author`) VALUES (?, '?', '?')", array($id, $text, $author));
+		$result = Database::execute(Database::get(), $query, __METHOD__, __LINE__);
+
+		Plugins::get()->activate(__METHOD__, 1, func_get_args());
+
+		return $result;
+	}
 	/**
 	 * Toggles the star property of a photo.
 	 * @return boolean Returns true when successful.

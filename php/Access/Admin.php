@@ -14,7 +14,6 @@ use Lychee\Modules\Validator;
 final class Admin extends Access {
 
 	public static function init($fn) {
-
 		switch ($fn) {
 
 			// Albums functions
@@ -39,7 +38,8 @@ final class Admin extends Access {
 			case 'Photo::setTags':          self::setPhotoTagsAction(); break;
 			case 'Photo::duplicate':        self::duplicatePhotoAction(); break;
 			case 'Photo::delete':           self::deletePhotoAction(); break;
-
+			case 'Photo::insertComment':		self::insertComment(); break;
+			case 'Photo::getComments':			self::getComments(); break;
 			// Add functions
 			case 'Photo::add':              self::uploadAction(); break;
 			case 'Import::url':             self::importUrlAction(); break;
@@ -167,9 +167,19 @@ final class Admin extends Access {
 
 		$photo = new Photo($_POST['photoID']);
 		Response::json($photo->setDescription($_POST['description']));
-
 	}
 
+	private static function getComments() {
+		Validator::required(isset($_GET['photoID']), __METHOD__);
+		$photo = new Photo($_GET['photoID']);
+		Response::json($photo->getComments($_GET['photoID']));
+	}
+
+	private static function insertComment() {
+		Validator::required(isset($_POST['photoID']), __METHOD__);
+		$photo = new Photo($_POST['photoID']);
+		Response::json($photo->insertComment($_POST['photoID'], $_POST['text'], $_POST['author']));
+	}
 	private static function setPhotoStarAction() {
 
 		Validator::required(isset($_POST['photoIDs']), __METHOD__);

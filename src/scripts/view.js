@@ -4,7 +4,22 @@
  */
 
 view = {}
-
+view.render = function(html) {
+	let wrap = sidebar.dom('.sidebar__wrapper')
+	wrap.html('')
+	if (typeof html === 'string')
+		html = [html]
+	html.forEach(function(e, i){
+		if(!e) return;
+		if(typeof e === 'string')
+				wrap.append(e);
+		else if(e.then)
+			e.then(function(res){
+					wrap.append(res);
+			});
+	})
+	sidebar.bind();
+}
 view.albums = {
 
 	init: function() {
@@ -273,10 +288,7 @@ view.album = {
 
 			let structure = sidebar.createStructure.album(album.json)
 			let html      = sidebar.render(structure)
-
-			sidebar.dom('.sidebar__wrapper').html(html)
-			sidebar.bind()
-
+			view.render(html);
 		}
 
 	}
@@ -443,13 +455,9 @@ view.photo = {
 	},
 
 	sidebar: function() {
-
 		let structure = sidebar.createStructure.photo(photo.json)
 		let html      = sidebar.render(structure)
-
-		sidebar.dom('.sidebar__wrapper').html(html)
-		sidebar.bind()
-
+		view.render(html);
 	}
 
 }
